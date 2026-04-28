@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from pathlib import Path
 import uvicorn
@@ -12,7 +13,8 @@ from predict import load_artifacts, predict
 MODEL      = None
 CLASS_MAP  = None
 DISEASE_DF = None
-INDEX_PATH = Path(__file__).parent / "index.html"
+INDEX_PATH   = Path(__file__).parent / "index.html"
+STATIC_DIR   = Path(__file__).parent / "static"
 
 
 @asynccontextmanager
@@ -28,6 +30,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Serve static assets (images, etc.)
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # CORS: allow any origin in dev; tighten for production
 app.add_middleware(
